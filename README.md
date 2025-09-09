@@ -1,2 +1,2 @@
-# PSP
-Excercises from psp class
+# Jonathan i Guillem
+Excercisis de clase
