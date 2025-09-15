@@ -25,13 +25,22 @@ function inicio(){
             console.log("3. Agregar película");
             console.log("4. Agregar soci");
             console.log("5. Agregar admin");
-            console.log("6. Agregar admin");
+            console.log("6. Prestar producto a soci");
+            console.log("7. Devolver producto de soci");
+            console.log("8. Mostrar todos los productos");
+            console.log("9. Mostrar todos los socios");
+            console.log("10. Mostrar todos los administradores de préstamos");
+            console.log("11. Mostrar recursos prestados por cada soci");
             console.log("0. Salir");
             opción = parseInt(readlineSync.question("Seleccione una opción: "));
             switch (opción) {
                 case 1:
                     let tituloLibro = readlineSync.question("Título del libro: ");
-                    let unidades_libro = readlineSync.question("Unidades del libro: ");
+                    let unidades_libro;
+                    do {
+                        unidades_libro = readlineSync.question("Unidades del libro (número entero): ");
+                    } while (!Number.isInteger(Number(unidades_libro)) || Number(unidades_libro) < 1);
+                    unidades_libro = Number(unidades_libro);
                     let autorLibro = readlineSync.question("Autor del libro: ");
                     let libro = new Libro(tituloLibro, unidades_libro, autorLibro);
                     productos.libros.push(libro);
@@ -39,7 +48,11 @@ function inicio(){
                     break;
                 case 2:
                     let tituloRevista = readlineSync.question("Título de la revista: ");
-                    let unidades_revista = readlineSync.question("Unidades de la revista: ");
+                    let unidades_revista;
+                    do {
+                        unidades_revista = readlineSync.question("Unidades de la revista (número entero): ");
+                    } while (!Number.isInteger(Number(unidades_revista)) || Number(unidades_revista) < 1);
+                    unidades_revista = Number(unidades_revista);
                     let fecha = readlineSync.question("Fecha de la revista: ");
                     let revista = new Revista(tituloRevista, unidades_revista, fecha);
                     if (!productos.revistas[fecha]) {
@@ -51,7 +64,11 @@ function inicio(){
                     break;
                 case 3:
                     let tituloPelicula = readlineSync.question("Título de la película: ");
-                    let unidades_pelicula = readlineSync.question("Unidades de la película: ");
+                    let unidades_pelicula;
+                    do {
+                        unidades_pelicula = readlineSync.question("Unidades de la película (número entero): ");
+                    } while (!Number.isInteger(Number(unidades_pelicula)) || Number(unidades_pelicula) < 1);
+                    unidades_pelicula = Number(unidades_pelicula);
                     let directorPelicula = readlineSync.question("Director de la película: ");
                     let generoPelicula = readlineSync.question("Género de la película: ");
                     let pelicula = new Pelicula(tituloPelicula, unidades_pelicula, directorPelicula, generoPelicula);
@@ -77,12 +94,136 @@ function inicio(){
                     console.log("Admin afegit:", admin);
                     break;
                 case 6:
-                    let nomPersona = readlineSync.question("Nom del soci: ");
+                    let dniSoci = readlineSync.question("DNI del soci: ");
+                    let sociaPrestar = socis.find(s => s.getDNI() === dniSoci);
+                    if (!sociaPrestar) {
+                        console.log("Soci no trobat.");
+                        break;
+                    }
+                    if (sociaPrestar.getNumProductes() >= 3) {
+                        console.log("El soci ja té el màxim de préstecs (3).");
+                        break;
+                    }
+                    // Elegir tipo de producto
+                    let tipo = readlineSync.question("Tipo de producto (libro/revista/pelicula): ").toLowerCase();
+                    let lista;
+                    if (tipo === "libro") {
+                        lista = productos.libros;
+                    } else if (tipo === "revista") {
+                        lista = Object.values(productos.revistas).flat();
+                    } else if (tipo === "pelicula") {
+                        lista = Object.values(productos.peliculas).flat();
+                    } else {
+                        console.log("Tipo de producto no válido.");
+                        break;
+                    }
+
+                    let titulo = readlineSync.question("Título del producto: ");
+                    let producto = lista.find(p => p.getTitol() === titulo && p.getExemplars() > 0);
+                    if (!producto) {
+                        console.log("Producto no disponible.");
+                        break;
+                    }
+
+                    producto.setExemplars(producto.getExemplars() - 1);
+                    sociaPrestar.possarProducte(producto);
+                    console.log(`Producto prestado a ${sociaPrestar.getNom()}:`, producto);
+                    break;
+                case 7:
+                    let dniSociDevolver = readlineSync.question("DNI del soci: ");
+                    let sociDevolver = socis.find(s => s.getDNI() === dniSociDevolver);
+                    if (!sociDevolver) {
+                        console.log("Soci no trobat.");
+                        break;
+                    }
+                    let tituloDevolver = readlineSync.question("Título del producto a devolver: ");
+                    let productoDevolver = null;
+                    for (let tipo in sociDevolver.getLlistaProductes()) {
+                        productoDevolver = sociDevolver.getLlistaProductes()[tipo].find(p => p.getTitol() === tituloDevolver);
+                        if (productoDevolver) {
+                            sociDevolver.getLlistaProductes()[tipo] = sociDevolver.getLlistaProductes()[tipo].filter(p => p.getTitol() !== tituloDevolver);
+                            break;
+                        }
+                    }
+                    if (!productoDevolver) {
+                        console.log("El soci no té aquest producte.");
+                        break;
+                    }
+                    productoDevolver.setExemplars(productoDevolver.getExemplars() + 1);
+                    console.log(`Producto retornado por ${sociDevolver.getNom()}:`, productoDevolver);
+                    break;
+                case 8:
+                    let tipoFiltro = readlineSync.question("Filtrar por tipo (libro/revista/pelicula/tots): ").toLowerCase();
+
+                    if (tipoFiltro === "libro" || tipoFiltro === "tots") {
+                        console.log("Llibres:");
+                        productos.libros.forEach(libro => {
+                            console.log(libro);
+                        });
+                        break;
+                    }
+
+                    if (tipoFiltro === "revista" || tipoFiltro === "tots") {
+                        let anyFiltro = readlineSync.question("Vols filtrar per any de publicació? (Introdueix l'any o deixa buit): ");
+                        console.log("Revistes:");
+                        Object.entries(productos.revistas).forEach(([any, revistes]) => {
+                            if (!anyFiltro || any === anyFiltro) {
+                                revistes.forEach(revista => {
+                                    console.log(revista);
+                                });
+                            }
+                        });
+                        break;
+                    }
+
+                    if (tipoFiltro === "pelicula" || tipoFiltro === "tots") {
+                        let genereFiltro = readlineSync.question("Vols filtrar per gènere? (Introdueix el gènere o deixa buit): ");
+                        console.log("Pel·lícules:");
+                        Object.entries(productos.peliculas).forEach(([genere, pelicules]) => {
+                            if (!genereFiltro || genere === genereFiltro) {
+                                pelicules.forEach(pelicula => {
+                                    console.log(pelicula);
+                                });
+                            }
+                        });
+                        break;
+                    }
+                case 9:
+                    console.log("Llista de socis:");
+                    socis.forEach(soci => {
+                        console.log(soci);
+                    });
+                    break;
+                case 10:
+                    console.log("Llista d'administradors de préstecs:");
+                    admins.forEach(admin => {
+                        console.log(admin);
+                    });
+                    break;
+                case 11:
+                    console.log("Recursos prestats per cada soci:");
+                    socis.forEach(soci => {
+                        console.log(`Soci: ${soci.getNom()} (${soci.getDNI()})`);
+                        const llistaProductes = soci.getLlistaProductes();
+                        let tienePrestamos = false;
+                        for (let tipo in llistaProductes) {
+                            if (llistaProductes[tipo].length > 0) {
+                                tienePrestamos = true;
+                                llistaProductes[tipo].forEach(producto => {
+                                    console.log(`  - ${tipo}: ${producto.getTitol()}`);
+                                });
+                            }
+                        }
+                        if (!tienePrestamos) {
+                            console.log("  No té recursos prestats.");
+                        }
+                    });
+                    break;
                 case 0:
-                console.log("Saliendo...");
+                    console.log("Saliendo...");
                 break;
                 default:
-                console.log("Opción no válida");
+                     console.log("Opción no válida");
                 break;
         }
         }
