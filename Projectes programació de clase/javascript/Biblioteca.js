@@ -25,6 +25,7 @@ function inicio(){
             console.log("3. Agregar película");
             console.log("4. Agregar soci");
             console.log("5. Agregar admin");
+            console.log("6. Agregar admin");
             console.log("0. Salir");
             opción = parseInt(readlineSync.question("Seleccione una opción: "));
             switch (opción) {
