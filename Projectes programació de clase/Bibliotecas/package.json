@@ -1,7 +1,0 @@
-{
-  "type": "module",
-  "main": "Biblioteca.js",
-  "dependencies": {
-    "readline-sync": "^1.4.10"
-  }
-}
