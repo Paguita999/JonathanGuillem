@@ -3,9 +3,21 @@ import { Revista } from "./Revista.js";
 import { Socis } from "./Socis.js";
 import { Admin } from "./Admin.js";
 import { Pelicula } from "./Pelicula.js";
+import { Biblioteca } from "./Biblioteca.js";
 import readlineSync from 'readline-sync';
 
-
+function agregarLlibre(){
+    let tituloLibro = readlineSync.question("Título del libro: ");
+    let unidades_libro;
+    do {
+        unidades_libro = readlineSync.question("Unidades del libro (número entero): ");
+    } while (!Number.isInteger(Number(unidades_libro)) || Number(unidades_libro) < 1);
+    unidades_libro = Number(unidades_libro);
+    let autorLibro = readlineSync.question("Autor del libro: ");
+    let libro = new Libro(tituloLibro, unidades_libro, autorLibro);
+    productos.libros.push(libro);
+    console.log("Libro agregado:", libro);
+}
 
 function inicio(){
     let socis = [];
@@ -33,31 +45,10 @@ function inicio(){
             opción = parseInt(readlineSync.question("Seleccione una opción: "));
             switch (opción) {
                 case 1:
-                    let tituloLibro = readlineSync.question("Título del libro: ");
-                    let unidades_libro;
-                    do {
-                        unidades_libro = readlineSync.question("Unidades del libro (número entero): ");
-                    } while (!Number.isInteger(Number(unidades_libro)) || Number(unidades_libro) < 1);
-                    unidades_libro = Number(unidades_libro);
-                    let autorLibro = readlineSync.question("Autor del libro: ");
-                    let libro = new Libro(tituloLibro, unidades_libro, autorLibro);
-                    productos.libros.push(libro);
-                    console.log("Libro agregado:", libro);
+                    
                     break;
                 case 2:
-                    let tituloRevista = readlineSync.question("Título de la revista: ");
-                    let unidades_revista;
-                    do {
-                        unidades_revista = readlineSync.question("Unidades de la revista (número entero): ");
-                    } while (!Number.isInteger(Number(unidades_revista)) || Number(unidades_revista) < 1);
-                    unidades_revista = Number(unidades_revista);
-                    let fecha = readlineSync.question("Fecha de la revista: ");
-                    let revista = new Revista(tituloRevista, unidades_revista, fecha);
-                    if (!productos.revistas[fecha]) {
-                        productos.revistas[fecha] = [];
-                    }
-                    productos.revistas[fecha].push(pelicula);
-                    console.log("Revista agregada:", revista);
+                    agregarLlibre
 
                     break;
                 case 3:
