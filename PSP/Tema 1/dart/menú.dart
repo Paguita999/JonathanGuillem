@@ -20,9 +20,23 @@ void main() async {
 
   try {
     final results = await Future.wait(urls.map(fetchUrl));
-    print('Resultados:');
+    final pizzas = <Map<String, dynamic>>[];
+
+    // Extraer las pizzas de cada página
     for (var result in results) {
-      print(result);
+      if (result['records'] != null) {
+        pizzas.addAll(List<Map<String, dynamic>>.from(result['records']));
+      }
+    }
+
+    print('ElJust Eat Pizzeria. Menú.');
+    print('=' * 59);
+
+    for (var pizza in pizzas) {
+      final name = pizza['nom'] ?? '';
+      final price = pizza['preu'] ?? '';
+      // Ajustar el nombre a 25 caracteres, alineado a la izquierda
+      print('${name.padRight(25)}${price.toString().padLeft(6)}€');
     }
   } catch (e) {
     print('Error: $e');
